@@ -72,6 +72,19 @@ const p = (id: string, label: string, extra: Partial<QuestOption> = {}): QuestOp
   ...extra,
 });
 
+const TL: Record<string, { en: string; he: string }> = {
+  sunny: { en: 'Sunny', he: 'שמשי' }, ocean: { en: 'Ocean', he: 'אוקייני' }, forest: { en: 'Forest', he: 'יערי' }, sunset: { en: 'Sunset', he: 'שקיעה' },
+  royal: { en: 'Royal', he: 'מלכותי' }, rose: { en: 'Rose', he: 'ורדרד' }, slate: { en: 'Slate', he: 'גרפיט' },
+  serif: { en: 'Elegant', he: 'אלגנטי' }, sans: { en: 'Modern', he: 'מודרני' }, rounded: { en: 'Playful', he: 'שובב' }, mono: { en: 'Technical', he: 'טכני' },
+  editorial: { en: 'Editorial', he: 'מגזיני' }, classic: { en: 'Classic', he: 'קלאסי' },
+  cafe: { en: 'Café', he: 'בית קפה' }, photo: { en: 'Photo studio', he: 'סטודיו לצילום' }, jewelry: { en: 'Jewelry shop', he: 'חנות תכשיטים' }, yoga: { en: 'Yoga studio', he: 'סטודיו ליוגה' },
+  bakery: { en: 'Bakery', he: 'מאפייה' }, barber: { en: 'Barbershop', he: 'מספרה' },
+  friendly: { en: 'Friendly', he: 'ידידותי' }, formal: { en: 'Formal', he: 'רשמי' }, brief: { en: 'Concise', he: 'תמציתי' }, bold: { en: 'Bold', he: 'נועז' }, warm: { en: 'Warm', he: 'חמים' },
+  photoStyle: { en: 'Real photos', he: 'תמונות אמיתיות' }, illustration: { en: 'Illustrations', he: 'איורים' }, threed: { en: '3D & depth', he: 'תלת-מימד ונפח' }, pattern: { en: 'Minimal & patterns', he: 'מינימליזם ודוגמאות' }, retro: { en: 'Retro', he: 'רטרו' },
+  sharp: { en: 'Sharp corners', he: 'פינות חדות' }, soft: { en: 'Soft rounding', he: 'פינות מעוגלות' }, pill: { en: 'Pill', he: 'קפסולה' }, wide: { en: 'Extra soft', he: 'מעוגל מאוד' },
+  book: { en: 'Book', he: 'קביעת תור' }, buy: { en: 'Order', he: 'הזמנה' }, write: { en: 'Write', he: 'כתיבה' }, call: { en: 'Call', he: 'התקשרות' }, subscribe: { en: 'Subscribe', he: 'הרשמה' },
+};
+
 export const PALETTES = {
   sunny: { name: 'Сонячна', bg: '#FFF8E1', surface: '#FFFFFF', text: '#1A1A1A', accent: '#FFC800', accentText: '#1A1A1A' },
   ocean: { name: 'Океанська', bg: '#E8F4F8', surface: '#FFFFFF', text: '#0B2239', accent: '#0E7490', accentText: '#FFFFFF' },
@@ -230,7 +243,7 @@ export const FALLBACK_LEVELS: Level[] = [
 export const FALLBACK_QUESTIONS: Question[] = [
   {
     levelSlug: 'palette', order: 1, kind: 'quiz', effectKey: 'palette', question: 'Який вигляд і настрій хочеш для сайту? Обери колірну тему.',
-    options: Object.entries(PALETTES).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(PALETTES).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'What look and feel do you want for your site? Choose a color theme.' },
       he: { question: 'איזה מראה ותחושה אתה רוצה לאתר שלך? בחר ערכת צבעים.' },
@@ -247,7 +260,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
   },
   {
     levelSlug: 'palette', order: 3, kind: 'quiz', effectKey: 'business', question: 'Який сайт ти створюєш? Обери напрям своєї справи.',
-    options: Object.entries(BUSINESSES).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(BUSINESSES).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'What kind of site are you creating? Choose your line of business.' },
       he: { question: 'איזה אתר אתה יוצר? בחר את תחום העיסוק שלך.' },
@@ -283,7 +296,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
 
   {
     levelSlug: 'typography', order: 1, kind: 'quiz', effectKey: 'fontPair', question: 'Обери стиль шрифтів для свого сайту.',
-    options: Object.entries(FONTS).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(FONTS).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'Choose the font style for your site.' },
       he: { question: 'בחר את סגנון הגופנים לאתר שלך.' },
@@ -300,7 +313,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
   },
   {
     levelSlug: 'typography', order: 3, kind: 'quiz', effectKey: 'tone', question: 'Яким тоном сайт спілкуватиметься з відвідувачами?',
-    options: Object.entries(TONES).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(TONES).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'What tone will your site use to speak with visitors?' },
       he: { question: 'באיזה טון האתר ידבר עם המבקרים?' },
@@ -336,7 +349,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
 
   {
     levelSlug: 'imagery', order: 1, kind: 'quiz', effectKey: 'imageStyle', question: 'Який стиль зображень використати на сайті?',
-    options: Object.entries(IMAGE_STYLES).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(IMAGE_STYLES).map(([id, v]) => p(id, v.name, { effect: v, translations: id === 'photo' ? TL.photoStyle : TL[id] })),
     translations: {
       en: { question: 'Which image style should the site use?' },
       he: { question: 'באיזה סגנון תמונות להשתמש באתר?' },
@@ -353,7 +366,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
   },
   {
     levelSlug: 'imagery', order: 3, kind: 'quiz', effectKey: 'radius', question: 'Обери стиль елементів — форму кнопок і карток.',
-    options: Object.entries(RADII).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(RADII).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'Choose your element style — the shape of buttons and cards.' },
       he: { question: 'בחר את סגנון האלמנטים — צורת הכפתורים והכרטיסים.' },
@@ -389,7 +402,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
 
   {
     levelSlug: 'services', order: 1, kind: 'quiz', effectKey: 'servicesCount', question: 'Скільки послуг показати на головній сторінці?',
-    options: [p('three', 'Три головні', { effect: { count: 3, name: 'Три головні' } }), p('four', 'Всі чотири', { effect: { count: 4, name: 'Всі чотири' } }), p('vixik', 'Нехай Wixsus обере', { effect: { count: 4, name: 'На смак Wixsusа' } })],
+    options: [p('three', 'Три головні', { effect: { count: 3, name: 'Три головні' }, translations: { en: 'Top three', he: 'שלושה עיקריים' } }), p('four', 'Всі чотири', { effect: { count: 4, name: 'Всі чотири' }, translations: { en: 'All four', he: 'כל הארבעה' } }), p('vixik', 'Нехай Wixsus обере', { effect: { count: 4, name: 'На смак Wixsusа' }, translations: { en: 'Let Wixsus decide', he: 'תן ל-Wixsus לבחור' } })],
     translations: {
       en: { question: 'How many services should we show on the home page?' },
       he: { question: 'כמה שירותים להציג בדף הבית?' },
@@ -406,7 +419,7 @@ export const FALLBACK_QUESTIONS: Question[] = [
   },
   {
     levelSlug: 'services', order: 3, kind: 'quiz', effectKey: 'cta', question: 'Яка головна дія для відвідувачів сайту? Обери кнопку заклику.',
-    options: Object.entries(CTAS).map(([id, v]) => p(id, v.name, { effect: v })),
+    options: Object.entries(CTAS).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
       en: { question: 'What is the main action for your site\'s visitors? Choose a call-to-action button.' },
       he: { question: 'מהי הפעולה העיקרית למבקרי האתר? בחר כפתור קריאה לפעולה.' },
@@ -452,10 +465,10 @@ export const FALLBACK_QUESTIONS: Question[] = [
   {
     levelSlug: 'features', order: 1, kind: 'quiz', effectKey: 'wixApps', question: 'Які функції додати на сайт?',
     options: [
-      p('shop-set', '🛒 Магазин + Форми + Тарифи', { effect: { apps: ['stores', 'forms', 'pricing'] } }),
-      p('booking-set', '📅 Записи + Учасники + Форми', { effect: { apps: ['bookings', 'members', 'forms'] } }),
-      p('content-set', '📝 Блог + Учасники + Заходи', { effect: { apps: ['blog', 'members', 'events'] } }),
-      p('resto-set', '🍽️ Ресторан + Заходи + Тарифи', { effect: { apps: ['restaurants', 'events', 'pricing'] } }),
+      p('shop-set', '🛒 Магазин + Форми + Тарифи', { effect: { apps: ['stores', 'forms', 'pricing'] }, translations: { en: '🛒 Store + Forms + Pricing', he: '🛒 חנות + טפסים + תוכניות מחיר' } }),
+      p('booking-set', '📅 Записи + Учасники + Форми', { effect: { apps: ['bookings', 'members', 'forms'] }, translations: { en: '📅 Bookings + Members + Forms', he: '📅 הזמנות + חברים + טפסים' } }),
+      p('content-set', '📝 Блог + Учасники + Заходи', { effect: { apps: ['blog', 'members', 'events'] }, translations: { en: '📝 Blog + Members + Events', he: '📝 בלוג + חברים + אירועים' } }),
+      p('resto-set', '🍽️ Ресторан + Заходи + Тарифи', { effect: { apps: ['restaurants', 'events', 'pricing'] }, translations: { en: '🍽️ Restaurants + Events + Pricing', he: '🍽️ מסעדות + אירועים + תוכניות מחיר' } }),
     ],
     translations: {
       en: { question: 'Which features should we add to your site?' },
@@ -474,10 +487,10 @@ export const FALLBACK_QUESTIONS: Question[] = [
   {
     levelSlug: 'features', order: 3, kind: 'quiz', effectKey: 'channel', question: 'Як відвідувачі знаходитимуть твій сайт?',
     options: [
-      p('seo', '🔍 Через пошуковики (SEO)', { effect: { channel: 'seo', name: 'SEO' } }),
-      p('social', '📱 Через соціальні мережі', { effect: { channel: 'social', name: 'Соцмережі' } }),
-      p('ads', '💸 Через платну рекламу', { effect: { channel: 'ads', name: 'Реклама' } }),
-      p('word', '🗣️ Сарафанне радіо', { effect: { channel: 'word', name: 'Сарафан' } }),
+      p('seo', '🔍 Через пошуковики (SEO)', { effect: { channel: 'seo', name: 'SEO' }, translations: { en: '🔍 Search engines (SEO)', he: '🔍 מנועי חיפוש' } }),
+      p('social', '📱 Через соціальні мережі', { effect: { channel: 'social', name: 'Соцмережі' }, translations: { en: '📱 Social media', he: '📱 רשתות חברתיות' } }),
+      p('ads', '💸 Через платну рекламу', { effect: { channel: 'ads', name: 'Реклама' }, translations: { en: '💸 Paid ads', he: '💸 פרסום ממומן' } }),
+      p('word', '🗣️ Сарафанне радіо', { effect: { channel: 'word', name: 'Сарафан' }, translations: { en: '🗣️ Word of mouth', he: '🗣️ מפה לאוזן' } }),
     ],
     translations: {
       en: { question: 'How will visitors find your site?' },

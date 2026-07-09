@@ -5,7 +5,8 @@ import { type Lang, RTL_LANGS, UI, t } from './i18n';
 import { BG_WORLD, VIXIK_HERO, VIXIK_VICTORY } from './quest';
 import type { Level, QuestOption, Question } from './quest';
 import SitePreview from './SitePreview';
-import { playBattleHit, playLaugh } from './sfx';
+import { playBattleHit, playLaugh, startMusic, stopMusic } from './sfx';
+import { createPortal } from 'react-dom';
 
 interface Props {
   levels: Level[];
@@ -103,6 +104,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(true);
+  const [musicOn, setMusicOn] = useState(true);
   const dodgeRef = useRef(0);
   const [dodgePos, setDodgePos] = useState<{ left: number; top: number } | null>(null);
   const [taunt, setTaunt] = useState(false);
@@ -136,14 +138,20 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
   function reportConfirmHover() {
     dodgeRef.current += 1;
-    if (dodgeRef.current % 3 === 0) {
-      playLaugh();
-      const bw = 220, bh = 60, m = 24;
-      const left = m + Math.floor(Math.random() * Math.max(1, window.innerWidth - bw - m * 2));
-      const top = m + Math.floor(Math.random() * Math.max(1, window.innerHeight - bh - m * 2));
-      setDodgePos({ left, top });
-      setTaunt(true);
+    if (dodgeRef.current % 3 !== 0) return;
+    playLaugh();
+    const bw = 240, bh = 64, mx = 24, topMin = 70;
+    const botMax = Math.max(topMin + 1, window.innerHeight - bh - 130);
+    const preview = document.querySelector('.wq-preview-float')?.getBoundingClientRect();
+    let left = mx, top = topMin;
+    for (let i = 0; i < 20; i++) {
+      left = mx + Math.floor(Math.random() * Math.max(1, window.innerWidth - bw - mx * 2));
+      top = topMin + Math.floor(Math.random() * Math.max(1, botMax - topMin));
+      const clear = !preview || left + bw < preview.left - 12 || left > preview.right + 12 || top + bh < preview.top - 12 || top > preview.bottom + 12;
+      if (clear) break;
     }
+    setDodgePos({ left, top });
+    setTaunt(true);
   }
 
   const cur = byLevel[levelIdx];
@@ -285,6 +293,14 @@ export default function WixikQuest({ levels, questions, source }: Props) {
               </button>
             ))}
           </div>
+          <button
+            className="wq-reset"
+            onClick={() => { if (musicOn) { stopMusic(); setMusicOn(false); } else { startMusic(); setMusicOn(true); } }}
+            title="Music"
+            aria-label="Toggle music"
+          >
+            {musicOn ? '🔊' : '🔇'}
+          </button>
           {phase !== 'start' && (
             <button className="wq-reset" onClick={reset} title={t(lang, 'resetTitle')}>↺</button>
           )}
@@ -293,7 +309,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
       {isLang && (
         <div className="wq-lang-stage">
-          <LangScreen onPick={(l) => { setLang(l); setPhase('start'); }} />
+          <LangScreen onPick={(l) => { setLang(l); setPhase('start'); if (musicOn) startMusic(); }} />
         </div>
       )}
 
@@ -564,7 +580,7 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
           );
         })}
       </div>
-      {customText.trim() && !picked && (
+      {customText.trim() && !picked && typeof document !== 'undefined' && createPortal(
         <button
           className="wq-custom-confirm wq-dodge"
           style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
@@ -572,7 +588,8 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
           onClick={pickCustom}
         >
           {UI[lang].customConfirm}
-        </button>
+        </button>,
+        document.body,
       )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
@@ -648,7 +665,7 @@ function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConf
           );
         })}
       </div>
-      {customText.trim() && !picked && (
+      {customText.trim() && !picked && typeof document !== 'undefined' && createPortal(
         <button
           className="wq-custom-confirm wq-dodge"
           style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
@@ -656,7 +673,8 @@ function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConf
           onClick={pickCustom}
         >
           {UI[lang].customConfirm}
-        </button>
+        </button>,
+        document.body,
       )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
