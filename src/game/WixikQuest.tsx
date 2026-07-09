@@ -127,9 +127,9 @@ export default function WixikQuest({ levels, questions, source }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  useEffect(() => { setDodgePos(null); setTaunt(false); dodgeRef.current = 0; }, [phase, qIdx, bossStep]);
+  useEffect(() => { setDodgePos(null); setTaunt(false); }, [phase, qIdx, bossStep]);
   useEffect(() => {
-    if (picked) { setTaunt(false); setDodgePos(null); dodgeRef.current = 0; armedUntil.current = Date.now() + 450; }
+    if (picked) { setTaunt(false); setDodgePos(null); armedUntil.current = Date.now() + 500; }
   }, [picked]);
   useEffect(() => {
     if (!taunt) return;
