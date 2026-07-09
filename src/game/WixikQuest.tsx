@@ -5,7 +5,7 @@ import { type Lang, RTL_LANGS, UI, t } from './i18n';
 import { BG_WORLD, VIXIK_HERO, VIXIK_VICTORY } from './quest';
 import type { Level, QuestOption, Question } from './quest';
 import SitePreview from './SitePreview';
-import { playBattleHit, playLaugh, startMusic, stopMusic } from './sfx';
+import { playSwordHit, playLaugh, startMusic, stopMusic } from './sfx';
 import { createPortal } from 'react-dom';
 
 interface Props {
@@ -165,7 +165,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
   function answerRegular(q: Question, opt: QuestOption) {
     if (picked) return;
-    playBattleHit();
+    playSwordHit();
     setPicked(opt);
     const label = opt.isCustom ? (opt as any)._typed ?? '' : optLabel(opt, lang);
     setAnswers((a) => ({ ...a, [`${q.levelSlug}-${q.order}`]: label.slice(0, 60) || opt.id }));
@@ -196,7 +196,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
   function answerBoss(q: Question, opt: QuestOption) {
     if (picked) return;
-    playBattleHit();
+    playSwordHit();
     setPicked(opt);
     const label = opt.isCustom ? (opt as any)._typed ?? '' : optLabel(opt, lang);
     setAnswers((a) => ({ ...a, [`${q.levelSlug}-${q.order}`]: label.slice(0, 60) || opt.id }));
@@ -486,6 +486,9 @@ function LangScreen({ onPick }: { onPick: (l: Lang) => void }) {
         <button className="wq-btn wq-btn-primary" onClick={() => onPick('en')}>🇬🇧 English</button>
         <button className="wq-btn wq-btn-primary" onClick={() => onPick('he')}>🇮🇱 עברית</button>
       </div>
+      <p style={{ fontSize: 11, opacity: 0.45, marginTop: 14, fontFamily: 'var(--g-mono)' }}>
+        ♪ Sword SFX — Gravity Sound (CC BY 4.0)
+      </p>
     </div>
   );
 }

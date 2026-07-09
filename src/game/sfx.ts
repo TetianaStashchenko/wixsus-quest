@@ -23,6 +23,25 @@ function noiseBuffer(c: AudioContext, dur: number): AudioBuffer {
   return buf;
 }
 
+const SWORD_SFX = 'https://music.wixstatic.com/mp3/4b150e_dba065601b4d4afcb3c81d3cefc45789.mp3';
+let swordEl: HTMLAudioElement | null = null;
+
+export function playSwordHit(): void {
+  if (typeof Audio === 'undefined') return;
+  try {
+    if (!swordEl) {
+      swordEl = new Audio(SWORD_SFX);
+      swordEl.preload = 'auto';
+    }
+    const n = swordEl.cloneNode() as HTMLAudioElement;
+    n.volume = 0.6;
+    n.currentTime = 0;
+    void n.play().catch(() => {});
+  } catch {
+    /* ignore */
+  }
+}
+
 export function playBattleHit(): void {
   const c = ac();
   if (!c) return;

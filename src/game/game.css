@@ -543,7 +543,7 @@
   gap: 8px;
   align-items: flex-start;
   justify-content: center;
-  max-width: 720px;
+  max-width: 90vw;
   width: 100%;
   padding: 10px 18px;
   background: linear-gradient(180deg, rgba(18, 13, 9, 0.88), rgba(10, 7, 5, 0.92));
