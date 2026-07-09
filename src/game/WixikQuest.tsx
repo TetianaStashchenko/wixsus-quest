@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DesignTokens, SitePart } from './design';
 import { PART_ORDER } from './design';
 import { type Lang, RTL_LANGS, UI, t } from './i18n';
@@ -102,28 +102,6 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(true);
-  const loaded = useRef(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const s = JSON.parse(raw) as Saved;
-        if (s.phase) setPhase(s.phase);
-        setLevelIdx(s.levelIdx); setQIdx(s.qIdx); setBossStep(s.bossStep ?? 0);
-        setTokens(s.tokens ?? {}); setParts(s.parts ?? []); setScore(s.score ?? 0);
-        setCorrect(s.correct ?? 0); setTotalGraded(s.totalGraded ?? 0); setAnswers(s.answers ?? {});
-        if (s.lang) setLang(s.lang);
-      }
-    } catch { /* fresh start */ }
-    loaded.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!loaded.current) return;
-    const s: Saved = { phase, levelIdx, qIdx, bossStep, tokens, parts, score, correct, totalGraded, answers, lang };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore quota */ }
-  }, [phase, levelIdx, qIdx, bossStep, tokens, parts, score, correct, totalGraded, answers, lang]);
 
   useEffect(() => {
     const root = document.getElementById('wq-root-el');
