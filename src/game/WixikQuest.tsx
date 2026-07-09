@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { DesignTokens, SitePart } from './design';
 import { PART_ORDER } from './design';
 import { type Lang, RTL_LANGS, UI, t } from './i18n';
 import { BG_WORLD, VIXIK_HERO, VIXIK_VICTORY } from './quest';
 import type { Level, QuestOption, Question } from './quest';
 import SitePreview from './SitePreview';
+import { playBattleHit, playLaugh } from './sfx';
 
 interface Props {
   levels: Level[];
@@ -102,6 +103,9 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(true);
+  const dodgeRef = useRef(0);
+  const [dodgePos, setDodgePos] = useState<{ left: number; top: number } | null>(null);
+  const [taunt, setTaunt] = useState(false);
 
   useEffect(() => {
     const root = document.getElementById('wq-root-el');
@@ -121,6 +125,27 @@ export default function WixikQuest({ levels, questions, source }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  useEffect(() => { setDodgePos(null); setTaunt(false); }, [phase, qIdx, bossStep]);
+  useEffect(() => { if (picked) setTaunt(false); }, [picked]);
+  useEffect(() => {
+    if (!taunt) return;
+    const onDoc = () => setTaunt(false);
+    document.addEventListener('click', onDoc, { once: true });
+    return () => document.removeEventListener('click', onDoc);
+  }, [taunt]);
+
+  function reportConfirmHover() {
+    dodgeRef.current += 1;
+    if (dodgeRef.current % 3 === 0) {
+      playLaugh();
+      const bw = 220, bh = 60, m = 24;
+      const left = m + Math.floor(Math.random() * Math.max(1, window.innerWidth - bw - m * 2));
+      const top = m + Math.floor(Math.random() * Math.max(1, window.innerHeight - bh - m * 2));
+      setDodgePos({ left, top });
+      setTaunt(true);
+    }
+  }
+
   const cur = byLevel[levelIdx];
 
   function reset() {
@@ -132,6 +157,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
   function answerRegular(q: Question, opt: QuestOption) {
     if (picked) return;
+    playBattleHit();
     setPicked(opt);
     const label = opt.isCustom ? (opt as any)._typed ?? '' : optLabel(opt, lang);
     setAnswers((a) => ({ ...a, [`${q.levelSlug}-${q.order}`]: label.slice(0, 60) || opt.id }));
@@ -162,6 +188,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
   function answerBoss(q: Question, opt: QuestOption) {
     if (picked) return;
+    playBattleHit();
     setPicked(opt);
     const label = opt.isCustom ? (opt as any)._typed ?? '' : optLabel(opt, lang);
     setAnswers((a) => ({ ...a, [`${q.levelSlug}-${q.order}`]: label.slice(0, 60) || opt.id }));
@@ -276,6 +303,19 @@ export default function WixikQuest({ levels, questions, source }: Props) {
             {portraitSrc && <img className="wq-portrait-img" src={portraitSrc} alt={portraitAlt} />}
           </div>
 
+          {taunt && (
+            <div className="wq-taunt" role="status" onClick={() => setTaunt(false)}>
+              <p className="wq-taunt-text">
+                {lang === 'he'
+                  ? 'חשבת שיהיה כזה קל? חחח'
+                  : lang === 'en'
+                    ? "thought it'd be that easy? haha"
+                    : 'а ти думав, все буде так просто? хахаха'}
+              </p>
+              <span className="wq-taunt-ticks" aria-hidden>✓✓</span>
+            </div>
+          )}
+
           <div className="wq-dialogue-wrap">
             <div className="wq-dialogue wq-swap" key={dialogueKey}>
               {phase === 'start' && (
@@ -309,6 +349,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
                   total={cur.regular.length}
                   picked={picked}
                   lang={lang}
+                  dodgePos={dodgePos}
+                  onConfirmHover={reportConfirmHover}
                   onPick={(o) => answerRegular(cur.regular[qIdx], o)}
                   onNext={nextRegular}
                 />
@@ -335,6 +377,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
                   total={cur.boss.length}
                   picked={picked}
                   lang={lang}
+                  dodgePos={dodgePos}
+                  onConfirmHover={reportConfirmHover}
                   onPick={(o) => answerBoss(cur.boss[bossStep], o)}
                   onNext={nextBoss}
                 />
@@ -437,7 +481,11 @@ function Stepper({ levels, levelIdx, parts, lang }: {
   return (
     <div className="wq-stepper">
       <div className="wq-stepper-inner">
-        <div className="wq-stepper-line"><div className="wq-stepper-line-fill" style={{ width: `${fill}%` }} /></div>
+        <svg className="wq-stepper-curve" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true">
+          <path className="wq-curve-track" d="M1,12 C16,3 34,3 50,12 S84,21 99,12" />
+          <path className="wq-curve-flow" d="M1,12 C16,3 34,3 50,12 S84,21 99,12" pathLength={100} />
+          <path className="wq-curve-fill" d="M1,12 C16,3 34,3 50,12 S84,21 99,12" pathLength={100} strokeDasharray="100" strokeDashoffset={100 - fill} />
+        </svg>
         {levels.map((lvl, i) => {
           const done = parts.includes(lvl.sitePart as SitePart);
           const active = i === levelIdx && !done;
@@ -455,9 +503,10 @@ function Stepper({ levels, levelIdx, parts, lang }: {
   );
 }
 
-function QuestionDialogue({ q, index, total, picked, lang, onPick, onNext }: {
+function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHover, onPick, onNext }: {
   q: Question; index: number; total: number; picked: QuestOption | null;
-  lang: Lang; onPick: (o: QuestOption) => void; onNext: () => void;
+  lang: Lang; dodgePos: { left: number; top: number } | null; onConfirmHover: () => void;
+  onPick: (o: QuestOption) => void; onNext: () => void;
 }) {
   const [customText, setCustomText] = useState('');
   const isLogic = q.kind === 'logic';
@@ -497,9 +546,6 @@ function QuestionDialogue({ q, index, total, picked, lang, onPick, onNext }: {
                   onChange={(e) => setCustomText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') pickCustom(); }}
                 />
-                <button className="wq-custom-confirm" disabled={!!picked || !customText.trim()} onClick={pickCustom}>
-                  {UI[lang].customConfirm}
-                </button>
               </div>
             );
           }
@@ -518,6 +564,16 @@ function QuestionDialogue({ q, index, total, picked, lang, onPick, onNext }: {
           );
         })}
       </div>
+      {customText.trim() && !picked && (
+        <button
+          className="wq-custom-confirm wq-dodge"
+          style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
+          onMouseEnter={onConfirmHover}
+          onClick={pickCustom}
+        >
+          {UI[lang].customConfirm}
+        </button>
+      )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
           {isLogic && (
@@ -536,9 +592,10 @@ function QuestionDialogue({ q, index, total, picked, lang, onPick, onNext }: {
   );
 }
 
-function BossDialogue({ bossName, q, step, total, picked, lang, onPick, onNext }: {
+function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConfirmHover, onPick, onNext }: {
   bossName: string; q: Question; step: number; total: number; picked: QuestOption | null;
-  lang: Lang; onPick: (o: QuestOption) => void; onNext: () => void;
+  lang: Lang; dodgePos: { left: number; top: number } | null; onConfirmHover: () => void;
+  onPick: (o: QuestOption) => void; onNext: () => void;
 }) {
   const [customText, setCustomText] = useState('');
   const hpPct = Math.round(((total - step - (picked ? 1 : 0)) / total) * 100);
@@ -576,9 +633,6 @@ function BossDialogue({ bossName, q, step, total, picked, lang, onPick, onNext }
                   onChange={(e) => setCustomText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') pickCustom(); }}
                 />
-                <button className="wq-custom-confirm" disabled={!!picked || !customText.trim()} onClick={pickCustom}>
-                  {UI[lang].customConfirm}
-                </button>
               </div>
             );
           }
@@ -594,6 +648,16 @@ function BossDialogue({ bossName, q, step, total, picked, lang, onPick, onNext }
           );
         })}
       </div>
+      {customText.trim() && !picked && (
+        <button
+          className="wq-custom-confirm wq-dodge"
+          style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
+          onMouseEnter={onConfirmHover}
+          onClick={pickCustom}
+        >
+          {UI[lang].customConfirm}
+        </button>
+      )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
           <p className={(!picked.isCustom && picked.correct) ? 'wq-good' : 'wq-bad'}>

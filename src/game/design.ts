@@ -54,6 +54,9 @@ const HUES: Record<string, [string, string]> = {
   ocean: ['#22B8CF', '#0E7490'],
   forest: ['#7BC96F', '#2F7D32'],
   sunset: ['#FF8A65', '#E85D4A'],
+  royal: ['#A084F0', '#6C4BD8'],
+  rose: ['#FF8FB3', '#D6336C'],
+  slate: ['#9A9A9A', '#4D4D4D'],
 };
 
 export interface Tile {
