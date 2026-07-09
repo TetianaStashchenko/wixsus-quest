@@ -83,6 +83,7 @@ const TL: Record<string, { en: string; he: string }> = {
   photoStyle: { en: 'Real photos', he: 'תמונות אמיתיות' }, illustration: { en: 'Illustrations', he: 'איורים' }, threed: { en: '3D & depth', he: 'תלת-מימד ונפח' }, pattern: { en: 'Minimal & patterns', he: 'מינימליזם ודוגמאות' }, retro: { en: 'Retro', he: 'רטרו' },
   sharp: { en: 'Sharp corners', he: 'פינות חדות' }, soft: { en: 'Soft rounding', he: 'פינות מעוגלות' }, pill: { en: 'Pill', he: 'קפסולה' }, wide: { en: 'Extra soft', he: 'מעוגל מאוד' },
   book: { en: 'Book', he: 'קביעת תור' }, buy: { en: 'Order', he: 'הזמנה' }, write: { en: 'Write', he: 'כתיבה' }, call: { en: 'Call', he: 'התקשרות' }, subscribe: { en: 'Subscribe', he: 'הרשמה' },
+  landing: { en: 'Landing', he: 'דף נחיתה' }, portfolio: { en: 'Portfolio', he: 'תיק עבודות' }, business: { en: 'Business', he: 'עסקי' }, store: { en: 'Online store', he: 'חנות מקוונת' },
 };
 
 export const PALETTES = {
@@ -192,6 +193,13 @@ export const CTAS = {
   subscribe: { name: 'Підписатись', label: 'Підписатись' },
 } as const;
 
+export const TEMPLATES = {
+  landing: { name: 'Лендінг', layout: 'landing' },
+  portfolio: { name: 'Портфоліо', layout: 'portfolio' },
+  business: { name: 'Бізнес', layout: 'business' },
+  store: { name: 'Магазин', layout: 'store' },
+} as const;
+
 export const FALLBACK_LEVELS: Level[] = [
   {
     levelNumber: 1, slug: 'palette', title: 'Долина Кольорів', sitePart: 'hero', bossImage: BOSS_IMG.palette,
@@ -250,12 +258,11 @@ export const FALLBACK_QUESTIONS: Question[] = [
     },
   },
   {
-    levelSlug: 'palette', order: 2, kind: 'logic', question: 'Скільки кольорів у веселці?',
-    explain: 'Веселка розкладає світло на сім барв: червону, оранжеву, жовту, зелену, блакитну, синю, фіолетову.',
-    options: [p('seven', 'Сім', { correct: true, translations: { en: 'Seven', he: 'שבעה' } }), p('three', 'Три', { translations: { en: 'Three', he: 'שלושה' } }), p('ten', 'Десять', { translations: { en: 'Ten', he: 'עשרה' } }), p('one', 'Один', { translations: { en: 'One', he: 'אחד' } }), p('five', 'Пʼять', { translations: { en: 'Five', he: 'חמישה' } }), p('twelve', 'Дванадцять', { translations: { en: 'Twelve', he: 'שנים עשר' } })],
+    levelSlug: 'palette', order: 2, kind: 'quiz', effectKey: 'template', question: 'Обери шаблон для свого сайту.',
+    options: Object.entries(TEMPLATES).map(([id, v]) => p(id, v.name, { effect: v, translations: TL[id] })),
     translations: {
-      en: { question: 'How many colors are in a rainbow?', explain: 'A rainbow splits light into seven colors: red, orange, yellow, green, cyan, blue and violet.' },
-      he: { question: 'כמה צבעים יש בקשת?', explain: 'הקשת מפצלת את האור לשבעה צבעים: אדום, כתום, צהוב, ירוק, תכלת, כחול וסגול.' },
+      en: { question: 'Choose a template for your site.' },
+      he: { question: 'בחר תבנית לאתר שלך.' },
     },
   },
   {

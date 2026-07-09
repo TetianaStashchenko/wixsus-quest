@@ -13,6 +13,45 @@ interface Props {
 
 const has = (parts: SitePart[], p: SitePart) => parts.includes(p);
 
+function GhostSection({ kind, soon }: { kind: 'hero' | 'about' | 'gallery' | 'services'; soon: string }) {
+  return (
+    <section className={`wq-ghost wq-ghost-${kind}`} aria-hidden>
+      <span className="wq-ghost-tag">{soon}</span>
+      {kind === 'hero' && (
+        <div className="wq-ghost-hero">
+          <div className="wq-ghost-copy">
+            <span className="wq-gb wq-gb-sm" />
+            <span className="wq-gb wq-gb-lg" />
+            <span className="wq-gb wq-gb-md" />
+            <span className="wq-gb wq-gb-btn" />
+          </div>
+          <div className="wq-ghost-art" />
+        </div>
+      )}
+      {kind === 'about' && (
+        <>
+          <span className="wq-gb wq-gb-title" />
+          <span className="wq-gb wq-gb-md" />
+          <span className="wq-gb wq-gb-md" />
+          <div className="wq-ghost-stats"><span /><span /><span /></div>
+        </>
+      )}
+      {kind === 'gallery' && (
+        <>
+          <span className="wq-gb wq-gb-title" />
+          <div className="wq-ghost-grid"><span /><span /><span /><span /></div>
+        </>
+      )}
+      {kind === 'services' && (
+        <>
+          <span className="wq-gb wq-gb-title" />
+          <div className="wq-ghost-cards"><span /><span /><span /></div>
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' }: Props) {
   const pal = tokens.palette ?? NEUTRAL;
   const biz = tokens.business;
@@ -23,10 +62,13 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
   const count = tokens.servicesCount?.count ?? 3;
   const services = (biz?.services ?? []).slice(0, count);
   const tiles = galleryTiles(tokens);
-  const empty = parts.length === 0;
+  const layout = tokens.template?.layout ?? 'landing';
+  const heroIcon = biz?.services?.[0]?.icon ?? '✨';
+  const isStore = layout === 'store';
+  const soon = lang === 'he' ? 'בקרוב' : lang === 'en' ? 'soon' : 'скоро';
 
   return (
-    <div className="wq-site" style={siteVars(tokens)}>
+    <div className={`wq-site wq-tpl-${layout}`} style={siteVars(tokens)}>
       {chrome && (
         <div className="wq-browser-bar">
           <span className="wq-dot" style={{ background: '#FF5F57' }} />
@@ -37,18 +79,7 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
       )}
 
       <div className="wq-canvas">
-        {empty && (
-          <div className="wq-blank">
-            <div className="wq-blank-bar" />
-            <div className="wq-blank-block" />
-            <div className="wq-blank-row">
-              <span /><span /><span />
-            </div>
-            <p>Порожньо і сіро... поки що.<br />Пройди рівень — і тут почне зʼявлятися твій сайт.</p>
-          </div>
-        )}
-
-        {has(parts, 'hero') && (
+        {has(parts, 'hero') ? (
           <header className="wq-hero wq-pop" style={{ background: pal.bg }}>
             <div className="wq-nav">
               <strong className="wq-logo">{siteName}</strong>
@@ -66,15 +97,18 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
                 <p>Ласкаво просимо до «{siteName}» — місця, зробленого з любовʼю до справи.</p>
                 <button className="wq-cta">{ctaLabel}</button>
               </div>
-              <div className="wq-hero-art" aria-hidden>
-                <div className="wq-blob" />
-                <span className="wq-hero-emoji">{biz?.services?.[0]?.icon ?? '✨'}</span>
+              <div className="wq-hero-mock" aria-hidden>
+                <div className="wq-hero-mock-top"><span /><span /><span /></div>
+                <div className="wq-hero-mock-icon">{heroIcon}</div>
+                <div className="wq-hero-mock-lines"><span /><span /><span /></div>
               </div>
             </div>
           </header>
+        ) : (
+          <GhostSection kind="hero" soon={soon} />
         )}
 
-        {has(parts, 'about') && (
+        {has(parts, 'about') ? (
           <section className="wq-about wq-pop">
             <h2>{tone?.greeting ?? 'Про нас'}</h2>
             <p>{tone?.about}</p>
@@ -84,9 +118,11 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
               <div><strong>100%</strong><span>з душею</span></div>
             </div>
           </section>
+        ) : (
+          <GhostSection kind="about" soon={soon} />
         )}
 
-        {has(parts, 'gallery') && (
+        {has(parts, 'gallery') ? (
           <section className="wq-gallery wq-pop">
             <h2>Наші роботи</h2>
             <div className="wq-grid">
@@ -98,9 +134,11 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
               ))}
             </div>
           </section>
+        ) : (
+          <GhostSection kind="gallery" soon={soon} />
         )}
 
-        {has(parts, 'services') && (
+        {has(parts, 'services') ? (
           <>
             <section className="wq-services wq-pop">
               <h2>Що ми пропонуємо</h2>
@@ -110,6 +148,7 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
                     <span className="wq-card-icon">{s.icon}</span>
                     <h3>{s.title}</h3>
                     <p>{s.text}</p>
+                    {isStore && <span className="wq-price">₴{(i + 1) * 150}</span>}
                   </article>
                 ))}
               </div>
@@ -121,6 +160,8 @@ export default function SitePreview({ tokens, parts, chrome = true, lang = 'uk' 
               <small>© {siteName}. Зібрано у грі «Wixsus Quest» ⚡</small>
             </footer>
           </>
+        ) : (
+          <GhostSection kind="services" soon={soon} />
         )}
 
         {has(parts, 'features') && tokens.wixApps && tokens.wixApps.length > 0 && (

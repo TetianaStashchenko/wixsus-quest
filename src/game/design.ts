@@ -19,6 +19,7 @@ export interface DesignTokens {
   servicesCount?: { count: number; name: string };
   cta?: Cta;
   wixApps?: string[];
+  template?: { name: string; layout: string };
 }
 
 export type SitePart = 'hero' | 'about' | 'gallery' | 'services' | 'features';
