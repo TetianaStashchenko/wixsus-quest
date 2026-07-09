@@ -167,12 +167,14 @@
 /* ===== Scene (Witcher dialogue layout) ===== */
 .wq-scene {
   position: relative;
-  z-index: 4;
+  z-index: 9;
   flex: 1;
   min-height: 0;
   display: flex;
   align-items: stretch;
 }
+.wq-dialogue-wrap { pointer-events: none; }
+.wq-dialogue, .wq-taunt, .wq-custom-confirm.wq-dodge { pointer-events: auto; }
 .wq-portrait {
   flex: 0 0 34%;
   position: relative;
@@ -748,6 +750,14 @@
 .wq-dialogue .wq-bad { color: #a5342b; }
 .wq-dialogue .wq-custom-input { background: rgba(255, 251, 240, 0.7); border-color: #b1904f; color: #2b2013; }
 .wq-dialogue .wq-custom-confirm { background: rgba(120, 86, 34, 0.18); border-color: #b1904f; color: #6b3b16; }
+/* finale — dark text on the parchment */
+.wq-dialogue .wq-stars { color: #C7922B; text-shadow: none; }
+.wq-dialogue .wq-score-row strong { color: #7a3b16; }
+.wq-dialogue .wq-score-row span { color: #6b5a3a; }
+.wq-dialogue .wq-sum-chip { color: #2b2013; background: rgba(120, 86, 34, 0.1); border-color: rgba(120, 86, 34, 0.3); }
+.wq-dialogue .wq-sum-label { color: #7a6743; }
+.wq-dialogue .wq-share-url { color: #6b5a3a; }
+.wq-dialogue .wq-input { background: rgba(255, 251, 240, 0.75); border-color: #b1904f; color: #2b2013; }
 
 /* ===== Dodging confirm button + messenger taunt (easter-egg) ===== */
 .wq-custom-confirm.wq-dodge {

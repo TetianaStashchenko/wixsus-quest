@@ -6,7 +6,6 @@ import { BG_WORLD, VIXIK_HERO, VIXIK_VICTORY } from './quest';
 import type { Level, QuestOption, Question } from './quest';
 import SitePreview from './SitePreview';
 import { playSwordHit, playLaugh, startMusic, stopMusic } from './sfx';
-import { createPortal } from 'react-dom';
 
 interface Props {
   levels: Level[];
@@ -106,6 +105,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [musicOn, setMusicOn] = useState(true);
   const dodgeRef = useRef(0);
+  const armedUntil = useRef(0);
   const [dodgePos, setDodgePos] = useState<{ left: number; top: number } | null>(null);
   const [taunt, setTaunt] = useState(false);
 
@@ -127,8 +127,10 @@ export default function WixikQuest({ levels, questions, source }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  useEffect(() => { setDodgePos(null); setTaunt(false); }, [phase, qIdx, bossStep]);
-  useEffect(() => { if (picked) setTaunt(false); }, [picked]);
+  useEffect(() => { setDodgePos(null); setTaunt(false); dodgeRef.current = 0; }, [phase, qIdx, bossStep]);
+  useEffect(() => {
+    if (picked) { setTaunt(false); setDodgePos(null); dodgeRef.current = 0; armedUntil.current = Date.now() + 450; }
+  }, [picked]);
   useEffect(() => {
     if (!taunt) return;
     const onDoc = () => setTaunt(false);
@@ -137,6 +139,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   }, [taunt]);
 
   function reportConfirmHover() {
+    if (Date.now() < armedUntil.current) return;
     dodgeRef.current += 1;
     if (dodgeRef.current % 3 !== 0) return;
     playLaugh();
@@ -583,17 +586,6 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
           );
         })}
       </div>
-      {customText.trim() && !picked && typeof document !== 'undefined' && createPortal(
-        <button
-          className="wq-custom-confirm wq-dodge"
-          style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
-          onMouseEnter={onConfirmHover}
-          onClick={pickCustom}
-        >
-          {UI[lang].customConfirm}
-        </button>,
-        document.body,
-      )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
           {isLogic && (
@@ -603,9 +595,14 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
           )}
           {!isLogic && <p className="wq-good">{t(lang, 'goodChoice')}</p>}
           {explain && <p className="wq-explain">{explain}</p>}
-          <div className="wq-choices">
-            <ChoiceBtn n={1} onClick={onNext}>{t(lang, 'nextQuestion')}</ChoiceBtn>
-          </div>
+          <button
+            className="wq-custom-confirm wq-dodge"
+            style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
+            onMouseEnter={onConfirmHover}
+            onClick={onNext}
+          >
+            {t(lang, 'nextQuestion')}
+          </button>
         </div>
       )}
     </>
@@ -668,28 +665,20 @@ function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConf
           );
         })}
       </div>
-      {customText.trim() && !picked && typeof document !== 'undefined' && createPortal(
-        <button
-          className="wq-custom-confirm wq-dodge"
-          style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
-          onMouseEnter={onConfirmHover}
-          onClick={pickCustom}
-        >
-          {UI[lang].customConfirm}
-        </button>,
-        document.body,
-      )}
       {picked && (
         <div className="wq-dlg-feedback wq-fade">
           <p className={(!picked.isCustom && picked.correct) ? 'wq-good' : 'wq-bad'}>
             {(!picked.isCustom && picked.correct) ? t(lang, 'critHit') : t(lang, 'blocked')}
           </p>
           {explain && <p className="wq-explain">{explain}</p>}
-          <div className="wq-choices">
-            <ChoiceBtn n={1} danger onClick={onNext}>
-              {step + 1 < total ? t(lang, 'nextAttack') : t(lang, 'finishBoss')}
-            </ChoiceBtn>
-          </div>
+          <button
+            className="wq-custom-confirm wq-dodge"
+            style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
+            onMouseEnter={onConfirmHover}
+            onClick={onNext}
+          >
+            {step + 1 < total ? t(lang, 'nextAttack') : t(lang, 'finishBoss')}
+          </button>
         </div>
       )}
     </>
