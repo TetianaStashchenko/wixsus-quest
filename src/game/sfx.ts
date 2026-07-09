@@ -49,7 +49,6 @@ export function playBattleHit(): void {
   const master = c.createGain();
   master.gain.value = 0.5;
   master.connect(c.destination);
-
   [55, 82.4, 110, 164.8].forEach((f) => {
     const o = c.createOscillator();
     o.type = 'sawtooth';
@@ -62,32 +61,6 @@ export function playBattleHit(): void {
     o.start(t);
     o.stop(t + 0.65);
   });
-
-  const src = c.createBufferSource();
-  src.buffer = noiseBuffer(c, 0.3);
-  const bp = c.createBiquadFilter();
-  bp.type = 'bandpass';
-  bp.frequency.value = 3200;
-  bp.Q.value = 6;
-  const ng = c.createGain();
-  ng.gain.setValueAtTime(0.45, t);
-  ng.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-  src.connect(bp).connect(ng).connect(master);
-  src.start(t);
-  src.stop(t + 0.3);
-
-  [1800, 2700, 4200].forEach((f) => {
-    const o = c.createOscillator();
-    o.type = 'square';
-    o.frequency.value = f;
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.05, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-    o.connect(g).connect(master);
-    o.start(t);
-    o.stop(t + 0.22);
-  });
-
   const k = c.createOscillator();
   k.type = 'sine';
   k.frequency.setValueAtTime(165, t);
@@ -107,7 +80,6 @@ export function playLaugh(): void {
   const master = c.createGain();
   master.gain.value = 0.5;
   master.connect(c.destination);
-
   const offsets = [0, 0.14, 0.28, 0.42, 0.56];
   const bases = [540, 500, 470, 430, 400];
   offsets.forEach((dt, i) => {
@@ -134,104 +106,173 @@ export function playLaugh(): void {
   });
 }
 
-/* ===== Epic wordless background music (procedural loop) ===== */
+/* ===== Epic wordless background music — dynamic procedural sequencer ===== */
 let musicTimer: ReturnType<typeof setInterval> | null = null;
 let musicGain: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let nextTime = 0;
 let step = 0;
+let cycle = 0;
 
-const BEAT = 60 / 92;
-const CHORDS: { root: number; notes: number[] }[] = [
-  { root: 110.0, notes: [220.0, 261.63, 329.63] }, // Am
-  { root: 87.31, notes: [174.61, 220.0, 261.63] }, // F
-  { root: 130.81, notes: [261.63, 329.63, 392.0] }, // C
-  { root: 98.0, notes: [196.0, 246.94, 293.66] }, // G
-];
-const LEAD = [659.25, 0, 587.33, 0, 523.25, 0, 587.33, 0, 659.25, 0, 783.99, 659.25, 587.33, 0, 523.25, 0];
+const BPM = 110;
+const EIGHTH = 60 / BPM / 2;
+const STEPS = 64; // 8 bars x 8 eighths
+
+const AM = { root: 110.0, notes: [220.0, 261.63, 329.63] };
+const F = { root: 87.31, notes: [174.61, 220.0, 261.63] };
+const C = { root: 130.81, notes: [261.63, 329.63, 392.0] };
+const G = { root: 98.0, notes: [196.0, 246.94, 293.66] };
+const DM = { root: 146.83, notes: [220.0, 293.66, 349.23] };
+const E = { root: 82.41, notes: [207.65, 246.94, 329.63] };
+const PROG = [AM, F, C, G, AM, F, DM, E];
+
+const LEAD_A = [659.25, 0, 0, 587.33, 0, 523.25, 0, 0, 587.33, 0, 659.25, 0, 783.99, 0, 659.25, 0];
+const LEAD_B = [880.0, 0, 783.99, 0, 659.25, 0, 587.33, 0, 523.25, 0, 587.33, 659.25, 0, 523.25, 0, 0];
 
 function padChord(c: AudioContext, notes: number[], t: number, dur: number, dest: GainNode): void {
-  notes.forEach((f) => {
-    [0, 1.5].forEach((det, i) => {
-      const o = c.createOscillator();
-      o.type = 'sawtooth';
-      o.frequency.value = f + det;
-      const lp = c.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.value = 1600;
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(i === 0 ? 0.05 : 0.03, t + 0.4);
-      g.gain.setValueAtTime(i === 0 ? 0.05 : 0.03, t + dur - 0.4);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(lp).connect(g).connect(dest);
-      o.start(t);
-      o.stop(t + dur);
-    });
+  notes.forEach((f, i) => {
+    const o = c.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = f + (i === 1 ? 1.4 : 0);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(900, t);
+    lp.frequency.linearRampToValueAtTime(1900, t + dur * 0.5);
+    lp.frequency.linearRampToValueAtTime(1100, t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.045, t + 0.5);
+    g.gain.setValueAtTime(0.045, t + dur - 0.4);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp).connect(g).connect(dest);
+    o.start(t);
+    o.stop(t + dur);
   });
 }
 
-function bass(c: AudioContext, f: number, t: number, dest: GainNode): void {
+function bass(c: AudioContext, f: number, t: number, dur: number, dest: GainNode): void {
   const o = c.createOscillator();
   o.type = 'triangle';
   o.frequency.value = f;
+  const sub = c.createOscillator();
+  sub.type = 'sine';
+  sub.frequency.value = f / 2;
   const g = c.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(0.12, t + 0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + BEAT * 0.9);
-  o.connect(g).connect(dest);
+  g.gain.linearRampToValueAtTime(0.13, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g);
+  sub.connect(g);
+  g.connect(dest);
   o.start(t);
-  o.stop(t + BEAT);
+  sub.start(t);
+  o.stop(t + dur + 0.02);
+  sub.stop(t + dur + 0.02);
 }
 
 function kick(c: AudioContext, t: number, dest: GainNode): void {
   const o = c.createOscillator();
   o.type = 'sine';
-  o.frequency.setValueAtTime(140, t);
-  o.frequency.exponentialRampToValueAtTime(45, t + 0.14);
+  o.frequency.setValueAtTime(150, t);
+  o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
   const g = c.createGain();
-  g.gain.setValueAtTime(0.16, t);
+  g.gain.setValueAtTime(0.18, t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
   o.connect(g).connect(dest);
   o.start(t);
   o.stop(t + 0.22);
 }
 
-function snare(c: AudioContext, t: number, dest: GainNode): void {
+function snare(c: AudioContext, t: number, dest: GainNode, vol = 0.09): void {
   const src = c.createBufferSource();
   src.buffer = noiseBuffer(c, 0.2);
   const hp = c.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.value = 1400;
+  hp.frequency.value = 1500;
   const g = c.createGain();
-  g.gain.setValueAtTime(0.09, t);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
   src.connect(hp).connect(g).connect(dest);
   src.start(t);
   src.stop(t + 0.2);
 }
 
-function lead(c: AudioContext, f: number, t: number, dest: GainNode): void {
+function hat(c: AudioContext, t: number, dest: GainNode, open: boolean): void {
+  const src = c.createBufferSource();
+  const d = open ? 0.12 : 0.045;
+  src.buffer = noiseBuffer(c, d + 0.02);
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 7500;
+  const g = c.createGain();
+  g.gain.setValueAtTime(open ? 0.05 : 0.032, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  src.connect(hp).connect(g).connect(dest);
+  src.start(t);
+  src.stop(t + d + 0.02);
+}
+
+function crash(c: AudioContext, t: number, dest: GainNode): void {
+  const src = c.createBufferSource();
+  src.buffer = noiseBuffer(c, 0.9);
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 5000;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.09, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+  src.connect(hp).connect(g).connect(dest);
+  src.start(t);
+  src.stop(t + 0.95);
+}
+
+function lead(c: AudioContext, f: number, t: number, dur: number, dest: GainNode): void {
   const o = c.createOscillator();
   o.type = 'triangle';
   o.frequency.value = f;
   const g = c.createGain();
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.linearRampToValueAtTime(0.07, t + 0.03);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + BEAT * 0.9);
+  g.gain.linearRampToValueAtTime(0.075, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g).connect(dest);
   o.start(t);
-  o.stop(t + BEAT);
+  o.stop(t + dur + 0.02);
 }
 
-function scheduleStep(c: AudioContext, s: number, t: number, dest: GainNode): void {
-  const chord = CHORDS[Math.floor(s / 4) % 4];
-  if (s % 4 === 0) padChord(c, chord.notes, t, BEAT * 4, dest);
-  bass(c, chord.root, t, dest);
-  kick(c, t, dest);
-  if (s % 4 === 2) snare(c, t, dest);
-  const lf = LEAD[s % 16];
-  if (lf) lead(c, lf, t, dest);
+function scheduleStep(c: AudioContext, s: number, t: number, dest: GainNode, cyc: number): void {
+  const bar = Math.floor(s / 8);
+  const inBar = s % 8;
+  const chord = PROG[bar];
+
+  if (inBar === 0) padChord(c, chord.notes, t, EIGHTH * 8, dest);
+  if (s === 0 && cyc >= 1) crash(c, t, dest);
+
+  // kick: quarters always; driving off-beat kick once built up
+  if (inBar % 2 === 0) kick(c, t, dest);
+  if (cyc >= 2 && inBar === 5) kick(c, t, dest);
+
+  // snare on beats 2 & 4 from first build
+  if (cyc >= 1 && (inBar === 2 || inBar === 6)) snare(c, t, dest);
+
+  // hats every eighth once built up (accented off-beats)
+  if (cyc >= 1) hat(c, t, dest, inBar % 2 === 1);
+
+  // bass: root each quarter; galloping eighths when intense
+  if (inBar % 2 === 0) bass(c, chord.root, t, EIGHTH * (cyc >= 2 ? 1.9 : 3.6), dest);
+  if (cyc >= 2 && inBar % 2 === 1) bass(c, chord.root, t, EIGHTH * 0.9, dest);
+
+  // lead motif from first build, octave-up accent when fully built
+  if (cyc >= 1) {
+    const motif = Math.floor(s / 16) % 2 === 0 ? LEAD_A : LEAD_B;
+    const lf = motif[s % 16];
+    if (lf) lead(c, lf * (cyc >= 3 ? 2 : 1), t, EIGHTH * 1.5, dest);
+  }
+
+  // drum fill across the last bar's second half
+  if (cyc >= 1 && bar === 7 && inBar >= 4) {
+    snare(c, t, dest, 0.06 + (inBar - 4) * 0.02);
+    if (inBar === 7) crash(c, t + EIGHTH, dest);
+  }
 }
 
 export function startMusic(): void {
@@ -241,16 +282,21 @@ export function startMusic(): void {
   musicBus.gain.value = 0.9;
   musicGain = c.createGain();
   musicGain.gain.setValueAtTime(0.0001, c.currentTime);
-  musicGain.gain.exponentialRampToValueAtTime(0.16, c.currentTime + 2);
+  musicGain.gain.exponentialRampToValueAtTime(0.15, c.currentTime + 2.5);
   musicBus.connect(musicGain).connect(c.destination);
   nextTime = c.currentTime + 0.15;
   step = 0;
+  cycle = 0;
   musicTimer = setInterval(() => {
     if (!musicBus) return;
     while (nextTime < c.currentTime + 0.14) {
-      scheduleStep(c, step, nextTime, musicBus);
-      nextTime += BEAT;
-      step = (step + 1) % 16;
+      scheduleStep(c, step, nextTime, musicBus, cycle);
+      nextTime += EIGHTH;
+      step += 1;
+      if (step >= STEPS) {
+        step = 0;
+        cycle += 1;
+      }
     }
   }, 25);
 }
