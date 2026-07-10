@@ -166,7 +166,7 @@
 
 /* ===== Scene (Witcher dialogue layout) ===== */
 .wq-scene {
-  --wq-raise: clamp(0px, calc(100vh - 640px), 500px);
+  --wq-raise: clamp(0px, calc(100vh - 640px), 250px);
   position: relative;
   z-index: 9;
   flex: 1;
