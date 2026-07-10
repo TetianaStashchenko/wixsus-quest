@@ -610,10 +610,14 @@
 @keyframes wq-wrong { 0%, 100% { transform: translateX(4px); } 25% { transform: translateX(-2px); } 50% { transform: translateX(8px); } 75% { transform: translateX(0); } }
 @keyframes wq-step-pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
 @keyframes wq-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* transform-free variant: a mid-animation ancestor transform would become the
+   containing block for the position:fixed dodge button and make it jump */
+@keyframes wq-fade-flat-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes wq-swap-in { from { opacity: 0; transform: translateY(14px) scale(0.99); filter: blur(2px); } to { opacity: 1; transform: none; filter: blur(0); } }
 @keyframes wq-pop { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
 
 .wq-fade { animation: wq-fade-in 0.4s ease; }
+.wq-fade-flat { animation: wq-fade-flat-in 0.4s ease; }
 .wq-swap { animation: wq-swap-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .wq-pop { animation: wq-pop 0.4s ease; }
 
@@ -733,7 +737,7 @@
 @media (prefers-reduced-motion: reduce) {
   .wq-bg-image, .wq-bg-rays, .wq-bg-embers span, .wq-bg-fog,
   .wq-portrait-img, .wq-portrait.is-boss .wq-portrait-img, .wq-portrait.wq-hit .wq-portrait-img,
-  .wq-lang-hero, .wq-fade, .wq-swap, .wq-pop,
+  .wq-lang-hero, .wq-fade, .wq-fade-flat, .wq-swap, .wq-pop,
   .wq-choice.correct, .wq-choice.wrong, .wq-curve-flow,
   .wq-step.active .wq-step-tile, .wq-step.done .wq-step-tile {
     animation: none !important;

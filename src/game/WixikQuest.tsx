@@ -105,7 +105,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
   const [previewOpen, setPreviewOpen] = useState(true);
   const [musicOn, setMusicOn] = useState(true);
   const dodgeRef = useRef(0);
-  const armedUntil = useRef(0);
+  const hoverSpent = useRef(false);
+  const tauntAt = useRef(0);
   const [dodgePos, setDodgePos] = useState<{ left: number; top: number } | null>(null);
   const [taunt, setTaunt] = useState(false);
 
@@ -127,19 +128,21 @@ export default function WixikQuest({ levels, questions, source }: Props) {
     document.documentElement.lang = lang;
   }, [lang]);
 
-  useEffect(() => { setDodgePos(null); setTaunt(false); }, [phase, qIdx, bossStep]);
+  useEffect(() => { setDodgePos(null); setTaunt(false); hoverSpent.current = false; }, [phase, qIdx, bossStep]);
   useEffect(() => {
-    if (picked) { setTaunt(false); setDodgePos(null); armedUntil.current = Date.now() + 500; }
+    if (picked) { setTaunt(false); setDodgePos(null); hoverSpent.current = false; }
   }, [picked]);
   useEffect(() => {
     if (!taunt) return;
-    const onDoc = () => setTaunt(false);
-    document.addEventListener('click', onDoc, { once: true });
+    const onDoc = () => {
+      if (Date.now() - tauntAt.current < 400) return;
+      setTaunt(false);
+    };
+    document.addEventListener('click', onDoc);
     return () => document.removeEventListener('click', onDoc);
   }, [taunt]);
 
-  function reportConfirmHover() {
-    if (Date.now() < armedUntil.current) return;
+  function dodgeOrPass() {
     dodgeRef.current += 1;
     if (dodgeRef.current % 3 !== 0) return;
     playLaugh();
@@ -154,7 +157,21 @@ export default function WixikQuest({ levels, questions, source }: Props) {
       if (clear) break;
     }
     setDodgePos({ left, top });
+    tauntAt.current = Date.now();
     setTaunt(true);
+  }
+
+  function reportNextHover() {
+    if (!hoverSpent.current) {
+      hoverSpent.current = true;
+      return;
+    }
+    dodgeOrPass();
+  }
+
+  function reportNextPress(e: React.MouseEvent) {
+    if (e.button !== 0) return;
+    dodgeOrPass();
   }
 
   const cur = byLevel[levelIdx];
@@ -369,7 +386,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
                   picked={picked}
                   lang={lang}
                   dodgePos={dodgePos}
-                  onConfirmHover={reportConfirmHover}
+                  onNextHover={reportNextHover}
+                  onNextPress={reportNextPress}
                   onPick={(o) => answerRegular(cur.regular[qIdx], o)}
                   onNext={nextRegular}
                 />
@@ -397,7 +415,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
                   picked={picked}
                   lang={lang}
                   dodgePos={dodgePos}
-                  onConfirmHover={reportConfirmHover}
+                  onNextHover={reportNextHover}
+                  onNextPress={reportNextPress}
                   onPick={(o) => answerBoss(cur.boss[bossStep], o)}
                   onNext={nextBoss}
                 />
@@ -525,9 +544,10 @@ function Stepper({ levels, levelIdx, parts, lang }: {
   );
 }
 
-function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHover, onPick, onNext }: {
+function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onNextHover, onNextPress, onPick, onNext }: {
   q: Question; index: number; total: number; picked: QuestOption | null;
-  lang: Lang; dodgePos: { left: number; top: number } | null; onConfirmHover: () => void;
+  lang: Lang; dodgePos: { left: number; top: number } | null;
+  onNextHover: () => void; onNextPress: (e: React.MouseEvent) => void;
   onPick: (o: QuestOption) => void; onNext: () => void;
 }) {
   const [customText, setCustomText] = useState('');
@@ -587,7 +607,7 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
         })}
       </div>
       {picked && (
-        <div className="wq-dlg-feedback wq-fade">
+        <div className="wq-dlg-feedback wq-fade-flat">
           {isLogic && (
             <p className={(!picked.isCustom && picked.correct) ? 'wq-good' : 'wq-bad'}>
               {(!picked.isCustom && picked.correct) ? t(lang, 'correctFeedback') : t(lang, 'wrongFeedback')}
@@ -598,7 +618,8 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
           <button
             className="wq-custom-confirm wq-dodge"
             style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
-            onMouseEnter={onConfirmHover}
+            onMouseEnter={onNextHover}
+            onMouseDown={onNextPress}
             onClick={onNext}
           >
             {t(lang, 'nextQuestion')}
@@ -609,9 +630,10 @@ function QuestionDialogue({ q, index, total, picked, lang, dodgePos, onConfirmHo
   );
 }
 
-function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConfirmHover, onPick, onNext }: {
+function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onNextHover, onNextPress, onPick, onNext }: {
   bossName: string; q: Question; step: number; total: number; picked: QuestOption | null;
-  lang: Lang; dodgePos: { left: number; top: number } | null; onConfirmHover: () => void;
+  lang: Lang; dodgePos: { left: number; top: number } | null;
+  onNextHover: () => void; onNextPress: (e: React.MouseEvent) => void;
   onPick: (o: QuestOption) => void; onNext: () => void;
 }) {
   const [customText, setCustomText] = useState('');
@@ -666,7 +688,7 @@ function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConf
         })}
       </div>
       {picked && (
-        <div className="wq-dlg-feedback wq-fade">
+        <div className="wq-dlg-feedback wq-fade-flat">
           <p className={(!picked.isCustom && picked.correct) ? 'wq-good' : 'wq-bad'}>
             {(!picked.isCustom && picked.correct) ? t(lang, 'critHit') : t(lang, 'blocked')}
           </p>
@@ -674,7 +696,8 @@ function BossDialogue({ bossName, q, step, total, picked, lang, dodgePos, onConf
           <button
             className="wq-custom-confirm wq-dodge"
             style={dodgePos ? { position: 'fixed', left: dodgePos.left, top: dodgePos.top, bottom: 'auto', transform: 'none' } : undefined}
-            onMouseEnter={onConfirmHover}
+            onMouseEnter={onNextHover}
+            onMouseDown={onNextPress}
             onClick={onNext}
           >
             {step + 1 < total ? t(lang, 'nextAttack') : t(lang, 'finishBoss')}
