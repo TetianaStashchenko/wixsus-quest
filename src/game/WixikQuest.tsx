@@ -298,7 +298,7 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
       {!isLang && (
         <div className="wq-topbar">
-          <span className="wq-brand">⚔ Wixsus Quest</span>
+          <span className="wq-brand">⚔ Wixsus create your site world!</span>
           <span className="wq-spacer" />
           <div className="wq-lang-btns">
             {(['uk', 'en', 'he'] as Lang[]).map((l) => (

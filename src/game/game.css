@@ -166,6 +166,7 @@
 
 /* ===== Scene (Witcher dialogue layout) ===== */
 .wq-scene {
+  --wq-raise: clamp(0px, calc(100vh - 640px), 500px);
   position: relative;
   z-index: 9;
   flex: 1;
@@ -183,6 +184,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
+  padding-bottom: var(--wq-raise);
   pointer-events: none;
 }
 .wq-portrait-img {
@@ -211,7 +213,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: flex-start;
-  padding: 44px 340px 120px 30px;
+  padding: 44px 340px calc(120px + var(--wq-raise)) 30px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
@@ -736,8 +738,8 @@
 
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
-  .wq-scene { flex-direction: column; }
-  .wq-portrait { flex: 0 0 32%; width: 100%; justify-content: center; margin-right: 0; margin-bottom: -20px; }
+  .wq-scene { --wq-raise: 0px; flex-direction: column; }
+  .wq-portrait { flex: 0 0 32%; width: 100%; justify-content: center; margin-right: 0; margin-bottom: -20px; padding-bottom: 0; }
   .wq-portrait-img { height: 100%; object-position: bottom center; margin-left: 0; }
   .wq-dialogue-wrap { padding: 12px 16px 150px; align-items: flex-start; }
   .wq-dialogue { padding: 34px 22px 26px 38px; }
@@ -853,7 +855,7 @@
 .wq-custom-confirm.wq-dodge {
   position: fixed;
   left: 50%;
-  bottom: 96px;
+  bottom: calc(96px + var(--wq-raise, 0px));
   top: auto;
   transform: translateX(-50%);
   z-index: 40;
