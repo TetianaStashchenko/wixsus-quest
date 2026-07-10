@@ -294,12 +294,6 @@ export default function WixikQuest({ levels, questions, source }: Props) {
           <span key={i} style={{ left: e.left, animationDelay: e.delay, animationDuration: e.dur, width: e.size, height: e.size, ['--drift']: e.drift } as any} />
         ))}
       </div>
-      <svg className="wq-defs" width="0" height="0" aria-hidden="true" focusable="false">
-        <filter id="wq-torn" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.018" numOctaves={3} seed={8} result="n" />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale={16} xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
       <div className="wq-vignette" aria-hidden />
 
       {!isLang && (
@@ -354,6 +348,8 @@ export default function WixikQuest({ levels, questions, source }: Props) {
 
           <div className="wq-dialogue-wrap">
             <div className="wq-dialogue wq-swap" key={dialogueKey}>
+              <i className="wq-dlg-frame" aria-hidden />
+              <span className="wq-dlg-tip" aria-hidden />
               {phase === 'start' && (
                 <>
                   <div className="wq-speaker">{HERO_NAME}</div>

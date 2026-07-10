@@ -39,18 +39,18 @@ export interface Level {
 }
 
 export const VIXIK_HERO =
-  'https://static.wixstatic.com/media/4b150e_575d550751e44f14a843f0504188851f~mv2.png';
+  'https://static.wixstatic.com/media/4b150e_b6346fa9de284a41a50526f19c988599~mv2.png';
 export const VIXIK_VICTORY =
-  'https://static.wixstatic.com/media/4b150e_c800cfec21534ed89c616079a62a9974~mv2.png';
+  'https://static.wixstatic.com/media/4b150e_25765309a70649dda918b606670f1213~mv2.png';
 export const BG_WORLD =
   'https://static.wixstatic.com/media/4b150e_610eafbd1e0543cca3f6681799df3337~mv2.png';
 
 const BOSS_IMG: Record<string, string> = {
-  palette: 'https://static.wixstatic.com/media/4b150e_e866c6fd6a824cafacea5349ba9a65c2~mv2.png',
-  typography: 'https://static.wixstatic.com/media/4b150e_a4cf9b4162a34c0ca0ca2ced5eb44f73~mv2.png',
-  imagery: 'https://static.wixstatic.com/media/4b150e_30dc2ebbf24a4522a47f22ca3e80b11f~mv2.png',
-  services: 'https://static.wixstatic.com/media/4b150e_0a6df70f0f2c49e3a06a1a6ed368915a~mv2.png',
-  features: 'https://static.wixstatic.com/media/4b150e_81c8bf6d7d7142cfa5b9ed270c0908d5~mv2.png',
+  palette: 'https://static.wixstatic.com/media/4b150e_78ef19f5b57e418086db43393d593b79~mv2.png',
+  typography: 'https://static.wixstatic.com/media/4b150e_0edfd446ab744aa0b4d6a6d5a3218ae7~mv2.png',
+  imagery: 'https://static.wixstatic.com/media/4b150e_e1b1818c7c8e441fb24c883445209843~mv2.png',
+  services: 'https://static.wixstatic.com/media/4b150e_9a46eed47967431abd205db3dc882513~mv2.png',
+  features: 'https://static.wixstatic.com/media/4b150e_a4194f045f294a9fb3b68ce1784c76f8~mv2.png',
 };
 
 export const WIX_APPS = [
