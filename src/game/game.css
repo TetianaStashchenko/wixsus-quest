@@ -737,7 +737,19 @@
 .wq-world-missing { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 
 /* ===== Responsive ===== */
-@media (max-width: 900px) {
+/* Mid width: keep the canonical row layout (hero left / form center /
+   path bottom / preview right), just tighter */
+@media (max-width: 1100px) and (min-width: 601px) {
+  .wq-portrait { flex: 0 0 26%; }
+  .wq-dialogue-wrap { padding: 24px 250px calc(100px + var(--wq-raise)) 14px; }
+  .wq-dialogue { padding: 34px 26px 26px 44px; }
+  .wq-preview-float { width: 225px; right: 12px; bottom: 100px; max-height: 40vh; }
+  .wq-step-label { font-size: 11px; }
+  .wq-stepper-inner { gap: 5px; }
+}
+
+/* True phones: column layout */
+@media (max-width: 600px) {
   .wq-scene { --wq-raise: 0px; flex-direction: column; }
   .wq-portrait { flex: 0 0 32%; width: 100%; justify-content: center; margin-right: 0; margin-bottom: -20px; padding-bottom: 0; min-height: 0; overflow: hidden; }
   .wq-portrait-img { height: 100%; max-width: 100%; object-position: bottom center; margin-left: 0; }

@@ -315,6 +315,17 @@ export default function WixikQuest({ levels, questions, source }: Props) {
           >
             {musicOn ? '🔊' : '🔇'}
           </button>
+          <button
+            className="wq-reset"
+            onClick={() => {
+              if (document.fullscreenElement) document.exitFullscreen();
+              else document.documentElement.requestFullscreen().catch(() => {});
+            }}
+            title="Fullscreen"
+            aria-label="Toggle fullscreen"
+          >
+            ⛶
+          </button>
           {phase !== 'start' && (
             <button className="wq-reset" onClick={reset} title={t(lang, 'resetTitle')}>↺</button>
           )}
