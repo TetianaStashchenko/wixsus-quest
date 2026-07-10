@@ -739,13 +739,13 @@
 /* ===== Responsive ===== */
 @media (max-width: 900px) {
   .wq-scene { --wq-raise: 0px; flex-direction: column; }
-  .wq-portrait { flex: 0 0 32%; width: 100%; justify-content: center; margin-right: 0; margin-bottom: -20px; padding-bottom: 0; }
-  .wq-portrait-img { height: 100%; object-position: bottom center; margin-left: 0; }
+  .wq-portrait { flex: 0 0 32%; width: 100%; justify-content: center; margin-right: 0; margin-bottom: -20px; padding-bottom: 0; min-height: 0; overflow: hidden; }
+  .wq-portrait-img { height: 100%; max-width: 100%; object-position: bottom center; margin-left: 0; }
   .wq-dialogue-wrap { padding: 12px 16px 150px; align-items: flex-start; }
   .wq-dialogue { padding: 34px 22px 26px 38px; }
   .wq-speaker { left: 26px; }
   .wq-preview-float { width: 200px; right: 10px; bottom: 96px; max-height: 30vh; }
-  .wq-step-label { display: none; }
+  .wq-step-label { font-size: 11px; }
   .wq-stepper-inner { gap: 4px; }
   .wq-stepper-curve { top: 8px; height: 26px; }
 }
